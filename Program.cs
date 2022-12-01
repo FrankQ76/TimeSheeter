@@ -16,13 +16,9 @@ using System.Threading;
 
 namespace JsonFixer
 {
-
     
-
     internal class Program 
     {
-
-        
 
         private const int WH_KEYBOARD_LL = 13;
         private const int WM_KEYDOWN = 0x0100;
@@ -154,6 +150,11 @@ namespace JsonFixer
                 // CTRL-C  ( COPY function hook )
                 if (Keys.C == (Keys)vkCode && Keys.Control == Control.ModifierKeys)
                 {
+                    if (_logging)
+                    {
+                        Console.WriteLine($"\nCopy function activated ( CTRL-C ).");
+
+                    }
                     notifyIcon.Icon = new Icon("icon_gray.ico");
 
                     System.Threading.Thread.Sleep(_sleepTimeMs);
@@ -170,17 +171,32 @@ namespace JsonFixer
 
                             if (jsonDoc == clipText)
                             {
+                                if (_logging)
+                                {
+                                    Console.WriteLine($"Json in clipboard is already in a good format.");
+
+                                }
                                 notifyIcon.Icon = new Icon("icon_green.ico");
 
                             }
                             else
                             {
+                                if (_logging)
+                                {
+                                    Console.WriteLine($"Json in clipboard is not well formated.");
+
+                                }
                                 notifyIcon.Icon = new Icon("icon_red.ico");
 
                                 if (_autoFix)
                                 {
                                     SetClip(jsonDoc);
-                                                                        
+                                    if (_logging)
+                                    {
+                                        Console.WriteLine($"Autofixing Json in clipboard Done.");
+
+                                    }
+
                                 }
                                 
                             }
@@ -188,7 +204,11 @@ namespace JsonFixer
                         }
                         catch (Exception ex)
                         {
+                            if (_logging)
+                            {
+                                Console.WriteLine($"Error occured during json parsing of clipboard value. Probably not json content.");
 
+                            }
                             notifyIcon.Icon = new Icon("icon_gray.ico");
 
                         }
@@ -211,6 +231,11 @@ namespace JsonFixer
                 // CTRL-J   ( format JSON string )
                 if (Keys.J == (Keys)vkCode && Keys.Control == Control.ModifierKeys)
                 {
+                    if (_logging)
+                    {
+                        Console.WriteLine($"\nForce Json formating function activated ( CTRL-J ).");
+
+                    }
                     notifyIcon.Icon = new Icon("icon_gray.ico");
 
                     System.Threading.Thread.Sleep(_sleepTimeMs);
@@ -227,17 +252,33 @@ namespace JsonFixer
 
                             if (jsonFormatted == clipText)
                             {
+                                if (_logging)
+                                {
+                                    Console.WriteLine($"Json in clipboard is already in a good format.");
+
+                                }
+
                                 notifyIcon.Icon = new Icon("icon_green.ico");
 
                             }
                             else
                             {
                                 SetClip(jsonFormatted);
-                                
+                                if (_logging)
+                                {
+                                    Console.WriteLine($"Fixing Json in clipboard Done.");
+
+                                }
+
                             }
                         }
                         catch (Exception ex)
                         {
+                            if (_logging)
+                            {
+                                Console.WriteLine($"Error occured during json parsing of clipboard value. Probably not json content.");
+
+                            }
                             notifyIcon.Icon = new Icon("icon_gray.ico");
                         }
 
