@@ -16,8 +16,8 @@ using System.Threading;
 
 namespace JsonFixer
 {
-    
-    internal class Program 
+
+    internal class Program
     {
 
         private const int WH_KEYBOARD_LL = 13;
@@ -27,7 +27,7 @@ namespace JsonFixer
         private static bool _autoFix = false;
         private static bool _logging = false;
         private static int _maxRetries = 5;
-        private static int _sleepTimeMs = 800; 
+        private static int _sleepTimeMs = 800;
 
         private static string _CstAutoFix = "Set AutoFix";
         private static string _CstLogging = "Show Console Log";
@@ -37,7 +37,7 @@ namespace JsonFixer
 
 
         static NotifyIcon notifyIcon = new NotifyIcon();
-        
+
 
         [STAThread]
         public static void Main()
@@ -70,6 +70,8 @@ namespace JsonFixer
 
             contextMenu.Items.Add("Exit", null, (s, e) => { System.Windows.Forms.Application.Exit(); });
 
+            contextMenu.Items.Add("Get Json Path Values", null, onClick: (s, e) => { GetJSonPathValue(contextMenu); });
+
             contextMenu.Items.Add(_textLogging, null, onClick: (s, e) => { ShowConsoleLog(contextMenu); });
 
             contextMenu.Items.Add(_textAutoFix, null, onClick: (s, e) => { SetAutoFix(contextMenu); });
@@ -77,10 +79,10 @@ namespace JsonFixer
 
         private static void SetAutoFix(ContextMenuStrip contextMenu)
         {
-           
+
             _autoFix = !_autoFix;
 
-            if (_autoFix )
+            if (_autoFix)
             {
                 _textAutoFix = "✔ " + _CstAutoFix;
             }
@@ -91,7 +93,7 @@ namespace JsonFixer
 
             SetContextMenu(contextMenu);
 
-            if (_logging ) 
+            if (_logging)
             {
                 Console.WriteLine($"AutoFix : {_autoFix}.");
             }
@@ -125,6 +127,30 @@ namespace JsonFixer
 
         }
 
+        private static void GetJSonPathValue(ContextMenuStrip contextMenu)
+        {
+
+
+            if (_logging)
+            {
+                Console.WriteLine($"\nFunction Get Json Path values requested.");
+            }
+                        
+            var pathValues = ExtractAllJsonPath();
+
+            if (!string.IsNullOrEmpty(pathValues))
+            {
+                SetClip(pathValues);
+
+                if (_logging)
+                {
+                    Console.WriteLine($"\nJson Path values has been copied to Clipboard.");
+                }
+            }
+            
+
+        }
+
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
         {
             using (Process curProcess = Process.GetCurrentProcess())
@@ -141,7 +167,7 @@ namespace JsonFixer
 
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            
+
             if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
@@ -163,10 +189,10 @@ namespace JsonFixer
 
                     if (!string.IsNullOrWhiteSpace(clipText))
                     {
-                        
+
                         try
                         {
-                            
+
                             var jsonDoc = JValue.Parse(clipText).ToString((Newtonsoft.Json.Formatting)Formatting.Indented);
 
                             if (jsonDoc == clipText)
@@ -183,7 +209,7 @@ namespace JsonFixer
                             {
                                 if (_logging)
                                 {
-                                    Console.WriteLine($"Json in clipboard is not well formated.");
+                                    Console.WriteLine($"Json in clipboard is not well formated but is usable.");
 
                                 }
                                 notifyIcon.Icon = new Icon("icon_red.ico");
@@ -198,7 +224,7 @@ namespace JsonFixer
                                     }
 
                                 }
-                                
+
                             }
 
                         }
@@ -244,10 +270,10 @@ namespace JsonFixer
 
                     if (!string.IsNullOrWhiteSpace(clipText))
                     {
-                        
+
                         try
                         {
-                                                        
+
                             string jsonFormatted = JValue.Parse(clipText).ToString((Newtonsoft.Json.Formatting)Formatting.Indented);
 
                             if (jsonFormatted == clipText)
@@ -269,6 +295,8 @@ namespace JsonFixer
                                     Console.WriteLine($"Fixing Json in clipboard Done.");
 
                                 }
+                                
+                                
 
                             }
                         }
@@ -304,7 +332,7 @@ namespace JsonFixer
             Clipboard.Clear();
 
             System.Threading.Thread.Sleep(60);
-                        
+
             Clipboard.SetDataObject(jsonFormatted, true, 30, 40);
 
             notifyIcon.Icon = new Icon("icon_green.ico");
@@ -333,6 +361,25 @@ namespace JsonFixer
 
         }
 
+        private static bool IsJsonValid(string json)
+        {
+
+            try
+            {
+                //var clipText = GetClipBoard();
+                var jsonFormatted = JValue.Parse(json).ToString((Newtonsoft.Json.Formatting)Formatting.Indented);
+                return true;
+            }
+            catch
+            {
+                if (_logging)
+                {
+                    Console.WriteLine($"\nNot a valid json document in the Clipboard.");
+
+                }
+                return false;
+            }
+        }
 
         public static string GetClipTextThreaded()
         {
@@ -344,7 +391,7 @@ namespace JsonFixer
                     {
                         ReturnValue = System.Windows.Forms.Clipboard.GetText();
                     }
-                    
+
                 });
             STAThread.SetApartmentState(ApartmentState.STA);
             STAThread.Start();
@@ -353,84 +400,54 @@ namespace JsonFixer
             return ReturnValue;
         }
 
-
-        //private static string GetClip()
-        //{
-
-        //    //var clipReady = CheckClipAvailable();
-
-        //    var clipReady = true;
-
-        //    if (clipReady)
-        //    {
-        //        return GetClipTextThreaded();
-        //    }
-        //    else
-        //    {
-        //        if (_logging)
-        //        {
-        //            Console.WriteLine($"Clipboard is locked by a process.");
-
-        //        }
-
-        //        return string.Empty;
-
-        //    }
-                
-        //}
-
-        //private static bool CheckClipAvailable()
-        //{
-
-        //    object tempObj = null;
-        //    var cnt = 0;
-
-        //    while (tempObj == null)
-        //    {
-        //        cnt++;
-
-        //        try
-        //        {
-        //            tempObj = GetClipTextThreaded();
-        //            return true;
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            if (_logging)
-        //            {
-        //                Console.WriteLine($"Exception : {ex.Message}.");
-
-        //            }
+        public static string ExtractAllJsonPath()
+        {
+            var json = GetClipBoard();
 
 
-        //            if (cnt > _maxRetries)
-        //            {
-        //                if (_logging)
-        //                {
-        //                    Console.WriteLine($"Max retry count reached : {_maxRetries}.");
+            if (!string.IsNullOrWhiteSpace(json) && IsJsonValid(json))
+            {
+                var jobject = JObject.Parse(json);
+                var sb = new StringBuilder();
 
-        //                }
+                RecursiveParse(sb, jobject);
+                if (_logging)
+                {
+                    Console.WriteLine("\nAll the Json Path values ready to be use in SQL: \n");
+                    Console.WriteLine(sb.ToString());
+                }
 
-        //                return false;
-        //            }
+                return sb.ToString();
+            }
 
-        //        }
+            if (_logging)
+            {
+                Console.WriteLine("\nCannot extract path values.");
+            }
 
-        //        System.Threading.Thread.Sleep(10);
+            return string.Empty;
 
-        //        if (_logging)
-        //        {
-        //            Console.WriteLine($"Retry #{cnt}.");
-
-        //        }
-
-        //    }
-
-        //    return false;
-        //}
+        }
 
 
+        public static void RecursiveParse(StringBuilder sb, JToken token)
+        {
+            foreach (var item in token.Children())
+            {
+                if (item.HasValues)
+                {
+                    RecursiveParse(sb, item);
+                }
+                else
+                {
+                    sb.AppendLine($"JSON_VALUE(Data, '$.{item.Path}') as {item.Path.Split('.').Last()}" );
+                }
+            }
 
+        }
+
+
+        //==============================================================================================
 
 
         [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
