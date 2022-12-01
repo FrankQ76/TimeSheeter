@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConsoleKeyHook2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("JsonFixer")]
+[assembly: AssemblyDescription("Program to fix json string")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("iA Groupe Financier")]
-[assembly: AssemblyProduct("ConsoleKeyHook2")]
-[assembly: AssemblyCopyright("Copyright © iA Groupe Financier 2022")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("JsonFixer")]
+[assembly: AssemblyCopyright("Copyright © Francois Quirion 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
