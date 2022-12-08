@@ -136,7 +136,8 @@ namespace JsonFixer
                 Console.WriteLine($"\nFunction Get Json Path values requested.");
             }
                         
-            var pathValues = ExtractAllJsonPath();
+            var pathValuesTmp = ExtractAllJsonPath();
+            var pathValues = pathValuesTmp.Remove(pathValuesTmp.Trim().Length - 1,1);
 
             if (!string.IsNullOrEmpty(pathValues))
             {
@@ -411,6 +412,7 @@ namespace JsonFixer
                 var sb = new StringBuilder();
 
                 RecursiveParse(sb, jobject);
+                                
                 if (_logging)
                 {
                     Console.WriteLine("\nAll the Json Path values ready to be use in SQL: \n");
@@ -440,7 +442,7 @@ namespace JsonFixer
                 }
                 else
                 {
-                    sb.AppendLine($"JSON_VALUE(Data, '$.{item.Path}') as {item.Path.Split('.').Last()}" );
+                    sb.AppendLine($"JSON_VALUE(Data, '$.{item.Path}') as {item.Path.Split('.').Last()}," );
                 }
             }
 
