@@ -137,15 +137,23 @@ namespace JsonFixer
             }
                         
             var pathValuesTmp = ExtractAllJsonPath();
-            var pathValues = pathValuesTmp.Remove(pathValuesTmp.Trim().Length - 1,1);
+            
 
-            if (!string.IsNullOrEmpty(pathValues))
+            if (!string.IsNullOrEmpty(pathValuesTmp))
             {
+                var pathValues = pathValuesTmp.Remove(pathValuesTmp.Trim().Length - 1, 1);
                 SetClip(pathValues);
 
                 if (_logging)
                 {
                     Console.WriteLine($"\nJson Path values has been copied to Clipboard.");
+                }
+            }
+            else
+            {
+                if (_logging)
+                {
+                    Console.WriteLine($"\nClipboard is null or empty.");
                 }
             }
             
