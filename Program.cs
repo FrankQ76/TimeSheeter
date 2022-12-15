@@ -68,13 +68,19 @@ namespace JsonFixer
         {
             contextMenu.Items.Clear();
 
-            contextMenu.Items.Add("Exit", null, (s, e) => { System.Windows.Forms.Application.Exit(); });
+            contextMenu.Items.Add("Removes Duplicates Values", null, onClick: (s, e) => { RemoveDuplicates(contextMenu); });
+
+            contextMenu.Items.Add("Get Duplicates Only", null, onClick: (s, e) => { GetDuplicates(contextMenu); });
 
             contextMenu.Items.Add("Get Json Path Values", null, onClick: (s, e) => { GetJSonPathValue(contextMenu); });
 
             contextMenu.Items.Add(_textLogging, null, onClick: (s, e) => { ShowConsoleLog(contextMenu); });
 
             contextMenu.Items.Add(_textAutoFix, null, onClick: (s, e) => { SetAutoFix(contextMenu); });
+
+            contextMenu.Items.Add("Exit", null, (s, e) => { System.Windows.Forms.Application.Exit(); });
+
+
         }
 
         private static void SetAutoFix(ContextMenuStrip contextMenu)
@@ -159,6 +165,113 @@ namespace JsonFixer
             
 
         }
+
+        private static void RemoveDuplicates(ContextMenuStrip contextMenu)
+        {
+
+
+            if (_logging)
+            {
+                Console.WriteLine($"\nFunction Remove Duplicates requested.");
+            }
+
+            string strValues = GetClipBoard();
+                       
+
+            if (!string.IsNullOrEmpty(strValues))
+            {
+                try
+                {
+                    string[] stringSeparators = new string[] { "\r\n" };
+                    var listValues = strValues.Split(stringSeparators, StringSplitOptions.None).ToList().Distinct().ToList();
+                    var result = String.Join("\n", listValues.ToArray());
+
+                    SetClip(result);
+
+                }
+                catch 
+                {
+                    if (_logging)
+                    {
+                        Console.WriteLine($"\nError trying to remove duplicates.");
+                    }
+                }
+
+                
+
+                if (_logging)
+                {
+                    Console.WriteLine($"\nNew values without duplicates has been copied to Clipboard.");
+                }
+            }
+            else
+            {
+                if (_logging)
+                {
+                    Console.WriteLine($"\nClipboard is null or empty.");
+                }
+            }
+
+
+        }
+
+        private static void GetDuplicates(ContextMenuStrip contextMenu)
+        {
+
+
+            if (_logging)
+            {
+                Console.WriteLine($"\nFunction Get Duplicates requested.");
+            }
+
+            string strValues = GetClipBoard();
+
+
+            if (!string.IsNullOrEmpty(strValues))
+            {
+                try
+                {
+                    string[] stringSeparators = new string[] { "\r\n" };
+                   
+                    var listValues = strValues.Split(stringSeparators, StringSplitOptions.None).ToList();
+                    var query = listValues.GroupBy(x => x)
+                                                    .Where(g => g.Count() > 1)
+                                                    .Select(y => y.Key)
+                                                    .ToList();
+
+
+                    
+                    var result = String.Join("\n", query.ToArray());
+
+                    SetClip(result);
+
+                }
+                catch
+                {
+                    if (_logging)
+                    {
+                        Console.WriteLine($"\nError trying to get duplicates.");
+                    }
+                }
+
+
+
+                if (_logging)
+                {
+                    Console.WriteLine($"\nNew values with duplicates only has been copied to Clipboard.");
+                }
+            }
+            else
+            {
+                if (_logging)
+                {
+                    Console.WriteLine($"\nClipboard is null or empty.");
+                }
+            }
+
+
+        }
+
 
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
         {
@@ -455,6 +568,9 @@ namespace JsonFixer
             }
 
         }
+
+
+
 
 
         //==============================================================================================
