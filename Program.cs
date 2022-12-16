@@ -13,131 +13,72 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Drawing;
 using System.Reflection;
 using System.Threading;
+using static JsonFixer.Program;
 
 namespace JsonFixer
 {
+    static class GlobalParm
+    {
+        public static bool _autoFix = false;
 
-    internal class Program
+        public static bool _logging = false;
+        public static int _maxRetries = 5;
+        public static int _sleepTimeMs = 800;
+
+        public static string _CstAutoFix = "Set AutoFix";
+        public static string _CstLogging = "Show Console Log";
+
+        public static string _textAutoFix = _CstAutoFix;
+        public static string _textLogging = _CstLogging;
+
+        public static NotifyIcon notifyIcon = new NotifyIcon();
+
+        public const int WH_KEYBOARD_LL = 13;
+        public const int WM_KEYDOWN = 0x0100;
+        
+        public static IntPtr _hookID = IntPtr.Zero;
+
+    }
+
+
+
+
+    public class Program
     {
 
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private static LowLevelKeyboardProc _proc = HookCallback;
-        private static IntPtr _hookID = IntPtr.Zero;
-        private static bool _autoFix = false;
-        private static bool _logging = false;
-        private static int _maxRetries = 5;
-        private static int _sleepTimeMs = 800;
 
-        private static string _CstAutoFix = "Set AutoFix";
-        private static string _CstLogging = "Show Console Log";
-
-        private static string _textAutoFix = _CstAutoFix;
-        private static string _textLogging = _CstLogging;
-
-
-        static NotifyIcon notifyIcon = new NotifyIcon();
+        public static LowLevelKeyboardProc _proc = HookCallback;
 
 
         [STAThread]
         public static void Main()
         {
-            notifyIcon.Icon = new Icon("icon_gray.ico");
-            SendMessage(Process.GetCurrentProcess().MainWindowHandle, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-            _hookID = SetHook(_proc);
-            SetConsoleWindowVisibility(_logging);
+            GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
+            ExternalDll.SendMessage(Process.GetCurrentProcess().MainWindowHandle, ExternalDll.WM_SYSCOMMAND, ExternalDll.SC_MINIMIZE, 0);
+            GlobalParm._hookID = SetHook(_proc);
+            ExternalDll.SetConsoleWindowVisibility(GlobalParm._logging);
 
 
-            notifyIcon.Visible = true;
-            notifyIcon.Text = System.Windows.Forms.Application.ProductName;
+            GlobalParm.notifyIcon.Visible = true;
+            GlobalParm.notifyIcon.Text = System.Windows.Forms.Application.ProductName;
 
-            var contextMenu = new ContextMenuStrip();
+            var contextMenu = new ContextMenuStrip();  
+            ContextMenu.SetContextMenu(contextMenu);
 
-            SetContextMenu(contextMenu);
-
-            notifyIcon.ContextMenuStrip = contextMenu;
+            GlobalParm.notifyIcon.ContextMenuStrip = contextMenu;
 
             System.Windows.Forms.Application.Run();
-            notifyIcon.Visible = false;
-            UnhookWindowsHookEx(_hookID);
-            FreeConsole();
+            GlobalParm.notifyIcon.Visible = false;
+            ExternalDll.UnhookWindowsHookEx(GlobalParm._hookID);
+            ExternalDll.FreeConsole();
 
         }
 
-        private static void SetContextMenu(ContextMenuStrip contextMenu)
-        {
-            contextMenu.Items.Clear();
-
-            contextMenu.Items.Add("Removes Duplicates Values", null, onClick: (s, e) => { RemoveDuplicates(contextMenu); });
-
-            contextMenu.Items.Add("Get Duplicates Only", null, onClick: (s, e) => { GetDuplicates(contextMenu); });
-
-            contextMenu.Items.Add("Get Json Path Values", null, onClick: (s, e) => { GetJSonPathValue(contextMenu); });
-
-            contextMenu.Items.Add(_textLogging, null, onClick: (s, e) => { ShowConsoleLog(contextMenu); });
-
-            contextMenu.Items.Add(_textAutoFix, null, onClick: (s, e) => { SetAutoFix(contextMenu); });
-
-            contextMenu.Items.Add("Exit", null, (s, e) => { System.Windows.Forms.Application.Exit(); });
-
-
-        }
-
-        private static void SetAutoFix(ContextMenuStrip contextMenu)
-        {
-
-            _autoFix = !_autoFix;
-
-            if (_autoFix)
-            {
-                _textAutoFix = "✔ " + _CstAutoFix;
-            }
-            else
-            {
-                _textAutoFix = _CstAutoFix;
-            }
-
-            SetContextMenu(contextMenu);
-
-            if (_logging)
-            {
-                Console.WriteLine($"AutoFix : {_autoFix}.");
-            }
-
-
-        }
-
-        private static void ShowConsoleLog(ContextMenuStrip contextMenu)
-        {
-
-            _logging = !_logging;
-
-            if (_logging)
-            {
-                _textLogging = "✔ " + _CstLogging;
-            }
-            else
-            {
-                _textLogging = _CstLogging;
-            }
-
-            SetConsoleWindowVisibility(_logging);
-
-            SetContextMenu(contextMenu);
-
-            if (_logging)
-            {
-                Console.WriteLine($"Show Console Log : {_logging}.");
-            }
-
-
-        }
-
-        private static void GetJSonPathValue(ContextMenuStrip contextMenu)
+        public static void GetJSonPathValue(ContextMenuStrip contextMenu)
         {
 
 
-            if (_logging)
+            if (GlobalParm._logging)
             {
                 Console.WriteLine($"\nFunction Get Json Path values requested.");
             }
@@ -148,16 +89,16 @@ namespace JsonFixer
             if (!string.IsNullOrEmpty(pathValuesTmp))
             {
                 var pathValues = pathValuesTmp.Remove(pathValuesTmp.Trim().Length - 1, 1);
-                SetClip(pathValues);
+                ActionClipboard.SetClip(pathValues);
 
-                if (_logging)
+                if (GlobalParm._logging)
                 {
                     Console.WriteLine($"\nJson Path values has been copied to Clipboard.");
                 }
             }
             else
             {
-                if (_logging)
+                if (GlobalParm._logging)
                 {
                     Console.WriteLine($"\nClipboard is null or empty.");
                 }
@@ -166,131 +107,21 @@ namespace JsonFixer
 
         }
 
-        private static void RemoveDuplicates(ContextMenuStrip contextMenu)
+
+
+
+        // ================================
+
+
+
+
+
+        
+
+        public static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
 
-
-            if (_logging)
-            {
-                Console.WriteLine($"\nFunction Remove Duplicates requested.");
-            }
-
-            string strValues = GetClipBoard();
-                       
-
-            if (!string.IsNullOrEmpty(strValues))
-            {
-                try
-                {
-                    string[] stringSeparators = new string[] { "\r\n" };
-                    var listValues = strValues.Split(stringSeparators, StringSplitOptions.None).ToList().Distinct().ToList();
-                    var result = String.Join("\n", listValues.ToArray());
-
-                    SetClip(result);
-
-                }
-                catch 
-                {
-                    if (_logging)
-                    {
-                        Console.WriteLine($"\nError trying to remove duplicates.");
-                    }
-                }
-
-                
-
-                if (_logging)
-                {
-                    Console.WriteLine($"\nNew values without duplicates has been copied to Clipboard.");
-                }
-            }
-            else
-            {
-                if (_logging)
-                {
-                    Console.WriteLine($"\nClipboard is null or empty.");
-                }
-            }
-
-
-        }
-
-        private static void GetDuplicates(ContextMenuStrip contextMenu)
-        {
-
-
-            if (_logging)
-            {
-                Console.WriteLine($"\nFunction Get Duplicates requested.");
-            }
-
-            string strValues = GetClipBoard();
-
-
-            if (!string.IsNullOrEmpty(strValues))
-            {
-                try
-                {
-                    string[] stringSeparators = new string[] { "\r\n" };
-                   
-                    var listValues = strValues.Split(stringSeparators, StringSplitOptions.None).ToList();
-                    var query = listValues.GroupBy(x => x)
-                                                    .Where(g => g.Count() > 1)
-                                                    .Select(y => y.Key)
-                                                    .ToList();
-
-
-                    
-                    var result = String.Join("\n", query.ToArray());
-
-                    SetClip(result);
-
-                }
-                catch
-                {
-                    if (_logging)
-                    {
-                        Console.WriteLine($"\nError trying to get duplicates.");
-                    }
-                }
-
-
-
-                if (_logging)
-                {
-                    Console.WriteLine($"\nNew values with duplicates only has been copied to Clipboard.");
-                }
-            }
-            else
-            {
-                if (_logging)
-                {
-                    Console.WriteLine($"\nClipboard is null or empty.");
-                }
-            }
-
-
-        }
-
-
-        private static IntPtr SetHook(LowLevelKeyboardProc proc)
-        {
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
-            {
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc,
-                    GetModuleHandle(curModule.ModuleName), 0);
-            }
-        }
-
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-
-
-        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            if (nCode >= 0 && wParam == (IntPtr)GlobalParm.WM_KEYDOWN)
             {
                 int vkCode = Marshal.ReadInt32(lParam);
 
@@ -298,16 +129,16 @@ namespace JsonFixer
                 // CTRL-C  ( COPY function hook )
                 if (Keys.C == (Keys)vkCode && Keys.Control == Control.ModifierKeys)
                 {
-                    if (_logging)
+                    if (GlobalParm._logging)
                     {
                         Console.WriteLine($"\nCopy function activated ( CTRL-C ).");
 
                     }
-                    notifyIcon.Icon = new Icon("icon_gray.ico");
+                    GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
 
-                    System.Threading.Thread.Sleep(_sleepTimeMs);
+                    System.Threading.Thread.Sleep(GlobalParm._sleepTimeMs);
 
-                    var clipText = GetClipBoard();
+                    var clipText = ActionClipboard.GetClipBoard();
 
                     if (!string.IsNullOrWhiteSpace(clipText))
                     {
@@ -319,27 +150,27 @@ namespace JsonFixer
 
                             if (jsonDoc == clipText)
                             {
-                                if (_logging)
+                                if (GlobalParm._logging)
                                 {
                                     Console.WriteLine($"Json in clipboard is already in a good format.");
 
                                 }
-                                notifyIcon.Icon = new Icon("icon_green.ico");
+                                GlobalParm.notifyIcon.Icon = new Icon("icon_green.ico");
 
                             }
                             else
                             {
-                                if (_logging)
+                                if (GlobalParm._logging)
                                 {
                                     Console.WriteLine($"Json in clipboard is not well formated but is usable.");
 
                                 }
-                                notifyIcon.Icon = new Icon("icon_red.ico");
+                                GlobalParm.notifyIcon.Icon = new Icon("icon_red.ico");
 
-                                if (_autoFix)
+                                if (GlobalParm._autoFix)
                                 {
-                                    SetClip(jsonDoc);
-                                    if (_logging)
+                                    ActionClipboard.SetClip(jsonDoc);
+                                    if (GlobalParm._logging)
                                     {
                                         Console.WriteLine($"Autofixing Json in clipboard Done.");
 
@@ -350,26 +181,26 @@ namespace JsonFixer
                             }
 
                         }
-                        catch (Exception ex)
+                        catch 
                         {
-                            if (_logging)
+                            if (GlobalParm._logging)
                             {
                                 Console.WriteLine($"Error occured during json parsing of clipboard value. Probably not json content.");
 
                             }
-                            notifyIcon.Icon = new Icon("icon_gray.ico");
+                            GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
 
                         }
                     }
                     else
                     {
-                        if (_logging)
+                        if (GlobalParm._logging)
                         {
                             Console.WriteLine($"Empty or locked clipboard.");
 
                         }
 
-                        notifyIcon.Icon = new Icon("icon_gray.ico");
+                        GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
                     }
 
 
@@ -379,16 +210,16 @@ namespace JsonFixer
                 // CTRL-J   ( format JSON string )
                 if (Keys.J == (Keys)vkCode && Keys.Control == Control.ModifierKeys)
                 {
-                    if (_logging)
+                    if (GlobalParm._logging)
                     {
                         Console.WriteLine($"\nForce Json formating function activated ( CTRL-J ).");
 
                     }
-                    notifyIcon.Icon = new Icon("icon_gray.ico");
+                    GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
 
-                    System.Threading.Thread.Sleep(_sleepTimeMs);
+                    System.Threading.Thread.Sleep(GlobalParm._sleepTimeMs);
 
-                    var clipText = GetClipBoard();
+                    var clipText = ActionClipboard.GetClipBoard();
 
                     if (!string.IsNullOrWhiteSpace(clipText))
                     {
@@ -400,19 +231,19 @@ namespace JsonFixer
 
                             if (jsonFormatted == clipText)
                             {
-                                if (_logging)
+                                if (GlobalParm._logging)
                                 {
                                     Console.WriteLine($"Json in clipboard is already in a good format.");
 
                                 }
 
-                                notifyIcon.Icon = new Icon("icon_green.ico");
+                                GlobalParm.notifyIcon.Icon = new Icon("icon_green.ico");
 
                             }
                             else
                             {
-                                SetClip(jsonFormatted);
-                                if (_logging)
+                                ActionClipboard.SetClip(jsonFormatted);
+                                if (GlobalParm._logging)
                                 {
                                     Console.WriteLine($"Fixing Json in clipboard Done.");
 
@@ -422,68 +253,34 @@ namespace JsonFixer
 
                             }
                         }
-                        catch (Exception ex)
+                        catch
                         {
-                            if (_logging)
+                            if (GlobalParm._logging)
                             {
                                 Console.WriteLine($"Error occured during json parsing of clipboard value. Probably not json content.");
 
                             }
-                            notifyIcon.Icon = new Icon("icon_gray.ico");
+                            GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
                         }
 
                     }
                     else
                     {
-                        if (_logging)
+                        if (GlobalParm._logging)
                         {
                             Console.WriteLine($"Empty or locked clipboard.");
 
                         }
 
-                        notifyIcon.Icon = new Icon("icon_gray.ico");
+                        GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
                     }
 
                 }
             }
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+            return ExternalDll.CallNextHookEx(GlobalParm._hookID, nCode, wParam, lParam);
         }
 
-        private static void SetClip(string jsonFormatted)
-        {
-            Clipboard.Clear();
-
-            System.Threading.Thread.Sleep(60);
-
-            Clipboard.SetDataObject(jsonFormatted, true, 30, 40);
-
-            notifyIcon.Icon = new Icon("icon_green.ico");
-
-        }
-
-        private static string GetClipBoard()
-        {
-
-            try
-            {
-                var contents = GetClipTextThreaded();
-                return contents;
-            }
-            catch { }
-            {
-                if (_logging)
-                {
-                    Console.WriteLine($"Clipboard is locked by a process.");
-
-                }
-
-                return string.Empty;
-            }
-
-
-        }
-
-        private static bool IsJsonValid(string json)
+        public static bool IsJsonValid(string json)
         {
 
             try
@@ -494,7 +291,7 @@ namespace JsonFixer
             }
             catch
             {
-                if (_logging)
+                if (GlobalParm._logging)
                 {
                     Console.WriteLine($"\nNot a valid json document in the Clipboard.");
 
@@ -503,28 +300,11 @@ namespace JsonFixer
             }
         }
 
-        public static string GetClipTextThreaded()
-        {
-            string ReturnValue = string.Empty;
-            Thread STAThread = new Thread(
-                delegate ()
-                {
-                    if (System.Windows.Forms.Clipboard.ContainsText())
-                    {
-                        ReturnValue = System.Windows.Forms.Clipboard.GetText();
-                    }
 
-                });
-            STAThread.SetApartmentState(ApartmentState.STA);
-            STAThread.Start();
-            STAThread.Join();
-
-            return ReturnValue;
-        }
 
         public static string ExtractAllJsonPath()
         {
-            var json = GetClipBoard();
+            var json = ActionClipboard.GetClipBoard();
 
 
             if (!string.IsNullOrWhiteSpace(json) && IsJsonValid(json))
@@ -534,7 +314,7 @@ namespace JsonFixer
 
                 RecursiveParse(sb, jobject);
                                 
-                if (_logging)
+                if (GlobalParm._logging)
                 {
                     Console.WriteLine("\nAll the Json Path values ready to be use in SQL: \n");
                     Console.WriteLine(sb.ToString());
@@ -543,7 +323,7 @@ namespace JsonFixer
                 return sb.ToString();
             }
 
-            if (_logging)
+            if (GlobalParm._logging)
             {
                 Console.WriteLine("\nCannot extract path values.");
             }
@@ -572,58 +352,18 @@ namespace JsonFixer
 
 
 
+        public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-        //==============================================================================================
 
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook,
-            LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode,
-            IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("user32.dll")]
-        internal static extern bool SendMessage(IntPtr hWnd, Int32 msg, Int32 wParam, Int32 lParam);
-        static Int32 WM_SYSCOMMAND = 0x0112;
-        static Int32 SC_MINIMIZE = 0x0F020;
-
-        [DllImport("user32.dll")]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        [DllImport("user32.dll")]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        public static void SetConsoleWindowVisibility(bool visible)
+        public static IntPtr SetHook(LowLevelKeyboardProc proc)
         {
-            IntPtr hWnd = FindWindow(null, Console.Title);
-            if (hWnd != IntPtr.Zero)
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
             {
-                if (visible) ShowWindow(hWnd, 1); //1 = SW_SHOWNORMAL           
-                else ShowWindow(hWnd, 0); //0 = SW_HIDE               
+                return ExternalDll.SetWindowsHookEx(GlobalParm.WH_KEYBOARD_LL, _proc, ExternalDll.GetModuleHandle(curModule.ModuleName), 0);
             }
         }
 
-        [DllImport("kernel32.dll")]
-        public static extern Boolean AllocConsole();
-
-        [DllImport("kernel32.dll")]
-        public static extern Boolean FreeConsole();
-
-        [DllImport("kernel32.dll")]
-        public static extern Boolean AttachConsole(Int32 ProcessId);
-
-        // Find window by Caption only. Note you must pass IntPtr.Zero as the first parameter.
-        // Also consider whether you're being lazy or not.
-        [DllImport("user32.dll", EntryPoint = "FindWindow", SetLastError = true)]
-        static extern IntPtr FindWindowByCaption(IntPtr ZeroOnly, string lpWindowName);
 
 
     }
