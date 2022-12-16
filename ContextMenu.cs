@@ -13,7 +13,7 @@ namespace JsonFixer
 
             contextMenu.Items.Add("Get Duplicates Only", null, onClick: (s, e) => { Duplicates.GetDuplicates(contextMenu); });
 
-            contextMenu.Items.Add("Get Json Path Values", null, onClick: (s, e) => { GetJSonPathValue(contextMenu); });
+            contextMenu.Items.Add("Get Json Path Values", null, onClick: (s, e) => { JsonTools.GetJSonPathValue(contextMenu); });
 
             contextMenu.Items.Add(GlobalParm._textLogging, null, onClick: (s, e) => { ConsolLog.ShowConsoleLog(contextMenu); });
 

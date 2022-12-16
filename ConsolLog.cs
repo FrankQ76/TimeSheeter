@@ -20,7 +20,7 @@ namespace JsonFixer
                 GlobalParm._textLogging = GlobalParm._CstLogging;
             }
 
-            SetConsoleWindowVisibility(GlobalParm._logging);
+            ExternalDll.SetConsoleWindowVisibility(GlobalParm._logging);
             ContextMenu.SetContextMenu(contextMenu);
 
             if (GlobalParm._logging)
