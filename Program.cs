@@ -15,6 +15,8 @@ using System.Reflection;
 using System.Threading;
 using static JsonFixer.Program;
 using Newtonsoft.Json.Bson;
+using System.Timers;
+using System.IO;
 
 namespace JsonFixer
 {
@@ -45,11 +47,19 @@ namespace JsonFixer
 
 
         private static LowLevelKeyboardProc _proc = HookCallback;
+        private static DateTime startTime;
+        private static DateTime endTime;
 
 
         [STAThread]
         internal static void Main()
         {
+
+            // Start tracking time
+            startTime = DateTime.Now;
+            endTime = DateTime.MinValue;
+                        
+
             GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
             ExternalDll.SendMessage(Process.GetCurrentProcess().MainWindowHandle, ExternalDll.WM_SYSCOMMAND, ExternalDll.SC_MINIMIZE, 0);
             GlobalParm._hookID = SetHook(_proc);
@@ -68,6 +78,18 @@ namespace JsonFixer
             GlobalParm.notifyIcon.Visible = false;
             ExternalDll.UnhookWindowsHookEx(GlobalParm._hookID);
             ExternalDll.FreeConsole();
+            
+            // Stop tracking time
+            endTime = DateTime.Now;
+
+            // Save time value to file
+            string timeValue = (endTime - startTime).ToString();
+            string filePath = "time.txt";
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                writer.WriteLine(endTime.ToString() + " - " + startTime.ToString() + " = " + timeValue.ToString());
+            }
+
 
         }
 
