@@ -93,16 +93,16 @@ namespace JsonFixer
 
             // Save time value to file
             string timeValue = (endTime - startTime).ToString();
-            string filePath = "time_detail.txt";
+            string filePath = @"C:\LOCAL\JsonFixer\time_detail.txt";
             using (StreamWriter writer = new StreamWriter(filePath, true))
             {
                 writer.WriteLine(endTime.ToString() + " - " + startTime.ToString() + " = " + timeValue.ToString());
             }
             
-            filePath = "time.txt";
+            filePath = @"C:\LOCAL\JsonFixer\time.txt";
             using (StreamWriter writer = new StreamWriter(filePath, true))
             {
-                writer.WriteLine(endTime.ToString() + " - " + startTime.ToString());
+                writer.WriteLine(startTime.ToString() + " to " + endTime.ToString());
             }
 
         }
