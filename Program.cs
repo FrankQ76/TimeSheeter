@@ -54,11 +54,7 @@ namespace JsonFixer
         [STAThread]
         internal static void Main()
         {
-
-            // Start tracking time
-            startTime = DateTime.Now;
-            endTime = DateTime.MinValue;
-                        
+            StartTimeSheet();
 
             GlobalParm.notifyIcon.Icon = new Icon("icon_gray.ico");
             ExternalDll.SendMessage(Process.GetCurrentProcess().MainWindowHandle, ExternalDll.WM_SYSCOMMAND, ExternalDll.SC_MINIMIZE, 0);
@@ -69,7 +65,7 @@ namespace JsonFixer
             GlobalParm.notifyIcon.Visible = true;
             GlobalParm.notifyIcon.Text = System.Windows.Forms.Application.ProductName;
 
-            var contextMenu = new ContextMenuStrip();  
+            var contextMenu = new ContextMenuStrip();
             ContextMenu.SetContextMenu(contextMenu);
 
             GlobalParm.notifyIcon.ContextMenuStrip = contextMenu;
@@ -78,21 +74,38 @@ namespace JsonFixer
             GlobalParm.notifyIcon.Visible = false;
             ExternalDll.UnhookWindowsHookEx(GlobalParm._hookID);
             ExternalDll.FreeConsole();
-            
+
+            EndTimeSheet();
+
+        }
+
+        private static void StartTimeSheet()
+        {
+            // Start tracking time
+            startTime = DateTime.Now;
+            endTime = DateTime.MinValue;
+        }
+
+        private static void EndTimeSheet()
+        {
             // Stop tracking time
             endTime = DateTime.Now;
 
             // Save time value to file
             string timeValue = (endTime - startTime).ToString();
-            string filePath = "time.txt";
+            string filePath = "time_detail.txt";
             using (StreamWriter writer = new StreamWriter(filePath, true))
             {
                 writer.WriteLine(endTime.ToString() + " - " + startTime.ToString() + " = " + timeValue.ToString());
             }
-
+            
+            filePath = "time.txt";
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                writer.WriteLine(endTime.ToString() + " - " + startTime.ToString());
+            }
 
         }
-
 
         public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
         private static IntPtr SetHook(LowLevelKeyboardProc proc)
