@@ -6,14 +6,14 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5FC17AFE-1945-4A2A-9910-6AFF95F358BD}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>JsonFixer</RootNamespace>
-    <AssemblyName>JsonFixer</AssemblyName>
+    <RootNamespace>TimeSheeter</RootNamespace>
+    <AssemblyName>TimeSheeter</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <PublishUrl>C:\LOCAL\JsonFixer\</PublishUrl>
+    <PublishUrl>C:\LOCAL\TimeSheeter\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
     <UpdateEnabled>false</UpdateEnabled>
@@ -23,7 +23,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>7</ApplicationRevision>
+    <PublisherName>Francois Quirion</PublisherName>
+    <ApplicationRevision>8</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -52,7 +53,7 @@
     <ManifestCertificateThumbprint>CF765C10EFF4C11B347F482E0F0F112B70D6E399</ManifestCertificateThumbprint>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>JsonFixer_TemporaryKey.pfx</ManifestKeyFile>
+    <ManifestKeyFile>TimeSheeter_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>true</GenerateManifests>
@@ -76,26 +77,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ActionClipboard.cs" />
-    <Compile Include="ConsolLog.cs" />
-    <Compile Include="Duplicates.cs" />
     <Compile Include="ExternalDll.cs" />
-    <Compile Include="JsonTools.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AutoFix.cs" />
     <Compile Include="ContextMenu.cs" />
-    <Compile Include="Write2Log.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="JsonFixer_TemporaryKey.pfx" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="icon_gray.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="icon_green.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JsonFixer")]
-[assembly: AssemblyDescription("Program to fix json string")]
+[assembly: AssemblyTitle("TimeSheeter")]
+[assembly: AssemblyDescription("Program to track time")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("JsonFixer")]
+[assembly: AssemblyProduct("TimeSheeter")]
 [assembly: AssemblyCopyright("Copyright © Francois Quirion 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
