@@ -17,6 +17,8 @@ using static TimeSheeter.Program;
 using Newtonsoft.Json.Bson;
 using System.Timers;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Globalization;
 
 namespace TimeSheeter
 {
@@ -26,6 +28,10 @@ namespace TimeSheeter
         public static bool timerToggle = true;
         public static bool _ShowConsole = false;
         public static NotifyIcon notifyIcon = new NotifyIcon();
+        public static string filePath = @"C:\LOCAL\TimeSheeter\time.txt";
+        
+        // Create a dictionary to store the total working time for each day
+        public static Dictionary<DateTime, TimeSpan> workingTimeByDay = new Dictionary<DateTime, TimeSpan>();
     }
 
     // ================================
@@ -43,6 +49,7 @@ namespace TimeSheeter
         internal static void Main()
         {
             StartTimeSheet();
+            ReadTimesheet();
 
             GlobalParm.notifyIcon.Icon = new Icon("icon_green.ico");
             ExternalDll.SendMessage(Process.GetCurrentProcess().MainWindowHandle, ExternalDll.WM_SYSCOMMAND, ExternalDll.SC_MINIMIZE, 0);
@@ -52,15 +59,11 @@ namespace TimeSheeter
             GlobalParm.notifyIcon.Visible = true;
             GlobalParm.notifyIcon.Text = System.Windows.Forms.Application.ProductName;
 
-            var contextMenu = new ContextMenuStrip();
-
-            ContextMenu.SetContextMenu(contextMenu);
-
-            GlobalParm.notifyIcon.ContextMenuStrip = contextMenu;
+            SetContextMenu();
 
             System.Windows.Forms.Application.Run();
             GlobalParm.notifyIcon.Visible = false;
-            
+
             ExternalDll.FreeConsole();
 
             if (GlobalParm.timerToggle)
@@ -68,6 +71,15 @@ namespace TimeSheeter
                 EndTimeSheet();
             }
 
+        }
+
+        private static void SetContextMenu()
+        {
+            var contextMenu = new ContextMenuStrip();
+
+            ContextMenu.SetContextMenu(contextMenu);
+
+            GlobalParm.notifyIcon.ContextMenuStrip = contextMenu;
         }
 
         public static void ToggleTimeSheet()
@@ -95,21 +107,95 @@ namespace TimeSheeter
             endTime = DateTime.MinValue;
         }
 
+
+
+
+
+        public static void ShowFileTimeSheet()
+        {
+            string fileName = GlobalParm.filePath; // replace with your file name
+            string notepadPath = @"C:\Windows\System32\notepad.exe"; // path to Notepad.exe on your system
+
+            Process.Start(notepadPath, fileName);
+
+        }
+
+        public static void ForceReloadTimesheet()
+        {
+            GlobalParm.workingTimeByDay.Clear(); 
+            ReadTimesheet();
+            SetContextMenu();
+        }
+
+            
+
+        public static void ReadTimesheet()
+        {
+
+            string[] lines = File.ReadAllLines(GlobalParm.filePath, System.Text.Encoding.UTF8).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+
+            // Set the starting date to last Monday
+            DateTime today = DateTime.Today;
+            int daysSinceLastMonday = ((int)today.DayOfWeek - 1 + 7) % 7;
+            DateTime startingDate = today.AddDays(-daysSinceLastMonday);
+
+
+
+            // Loop through each line in the timesheet that starts from last Monday
+            var filteredLines = lines
+                .Where(line => DateTime.Parse(line.Split()[0]).Date >= startingDate);
+
+            foreach (string line in filteredLines)
+            {
+                // Parse the start and end times from the line
+                string[] parts = line.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                DateTime startTime = DateTime.Parse(parts[0] + " " + parts[1]);
+                DateTime endTime = DateTime.Parse(parts[3] + " " + parts[4]);
+
+                // Calculate the working time for the line
+                TimeSpan workingTime = endTime - startTime;
+
+                // Add the working time to the total for the day
+                DateTime date = startTime.Date;
+                if (!GlobalParm.workingTimeByDay.ContainsKey(date))
+                {
+                    GlobalParm.workingTimeByDay[date] = TimeSpan.Zero;
+                }
+                GlobalParm.workingTimeByDay[date] += workingTime;
+            }
+
+            TimeSpan totalWorkedHours = totalWorkedHoursForTheWeek();
+
+            foreach (var workingTime in GlobalParm.workingTimeByDay)
+            {
+                Console.WriteLine(workingTime.Key.ToString("yyyy-MM-dd") + " " + workingTime.Value.ToString());
+            }
+
+            // Output the total worked hours for each day and for the week
+            Console.WriteLine("\nTotal Worked Hours Since Last Monday: " + totalWorkedHours.ToString());
+        }
+
+        public static TimeSpan totalWorkedHoursForTheWeek()
+        {
+            // Calculate the sum of worked hours for the week
+            TimeSpan totalWorkedHours = TimeSpan.Zero;
+            foreach (var workingTime in GlobalParm.workingTimeByDay)
+            {
+                totalWorkedHours += workingTime.Value;
+            }
+
+            return totalWorkedHours;
+        }
+
+
+
+
         private static void EndTimeSheet()
         {
             // Stop tracking time
             endTime = DateTime.Now;
-
-            // Save time value to file
-            string timeValue = (endTime - startTime).ToString();
-            string filePath = @"C:\LOCAL\TimeSheeter\time_detail.txt";
-            using (StreamWriter writer = new StreamWriter(filePath, true))
-            {
-                writer.WriteLine(endTime.ToString() + " - " + startTime.ToString() + " = " + timeValue.ToString());
-            }
-            
-            filePath = @"C:\LOCAL\TimeSheeter\time.txt";
-            using (StreamWriter writer = new StreamWriter(filePath, true))
+                        
+            using (StreamWriter writer = new StreamWriter(GlobalParm.filePath, true))
             {
                 writer.WriteLine(startTime.ToString() + " to " + endTime.ToString());
             }
