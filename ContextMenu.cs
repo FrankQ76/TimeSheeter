@@ -34,6 +34,9 @@ namespace TimeSheeter
             {
                 switch (workingTime.Key.DayOfWeek)
                 {
+                    case DayOfWeek.Saturday:
+                        satLabel = FormatWorkingTime(workingTime.Key, workingTime.Value);
+                        break;
                     case DayOfWeek.Sunday:
                         sunLabel = FormatWorkingTime(workingTime.Key, workingTime.Value);
                         break;
@@ -52,9 +55,7 @@ namespace TimeSheeter
                     case DayOfWeek.Friday:
                         friLabel = FormatWorkingTime(workingTime.Key, workingTime.Value);
                         break;
-                    case DayOfWeek.Saturday:
-                        satLabel = FormatWorkingTime(workingTime.Key, workingTime.Value);
-                        break;
+
                     default:
                         break;
                 }
@@ -64,14 +65,14 @@ namespace TimeSheeter
 
             // Create a new context menu for the "Show TimeSheet" item
             ContextMenuStrip showTimeSheetMenu = new ContextMenuStrip();
+
+
+            if (!string.IsNullOrWhiteSpace(satLabel))
+                showTimeSheetMenu.Items.Add(satLabel, null, (s, e) => { });
             
             if (!string.IsNullOrWhiteSpace(sunLabel))
-            {
                 showTimeSheetMenu.Items.Add(sunLabel, null, (s, e) => { });
-                
-            }
-            
-            
+        
             showTimeSheetMenu.Items.Add(monLabel, null, (s, e) => { });
             showTimeSheetMenu.Items.Add(tueLabel, null, (s, e) => { });
             showTimeSheetMenu.Items.Add(wedLabel, null, (s, e) => { });
@@ -79,16 +80,9 @@ namespace TimeSheeter
             showTimeSheetMenu.Items.Add(friLabel, null, (s, e) => { });
 
 
-            if (!string.IsNullOrWhiteSpace(satLabel))
-            {
-                showTimeSheetMenu.Items.Add(satLabel, null, (s, e) => { });
-            }
-
             showTimeSheetMenu.Items.Add(doubleseparator, null, (s, e) => { });
 
-
-
-            
+           
 
             TimeSpan totalWorkedHours = Program.totalWorkedHoursForTheWeek();
             // Convert the total worked hours to decimal format

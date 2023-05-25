@@ -20,6 +20,18 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Globalization;
 
+//   _______
+//   |/      |
+//   |       |
+//   |      ( )
+//   |      /|\ _TIME SHEET 
+//   |      / \ 
+//   |
+// __|___
+
+
+
+
 namespace TimeSheeter
 {
 
@@ -134,14 +146,11 @@ namespace TimeSheeter
 
             string[] lines = File.ReadAllLines(GlobalParm.filePath, System.Text.Encoding.UTF8).Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
-            // Set the starting date to last Monday
-            DateTime today = DateTime.Today;
-            int daysSinceLastMonday = ((int)today.DayOfWeek - 1 + 7) % 7;
-            DateTime startingDate = today.AddDays(-daysSinceLastMonday);
+            DateTime startingDate = GetLastSaturday();
 
 
 
-            // Loop through each line in the timesheet that starts from last Monday
+            // Loop through each line in the timesheet that starts from last saturday
             var filteredLines = lines
                 .Where(line => DateTime.Parse(line.Split()[0]).Date >= startingDate);
 
@@ -172,8 +181,17 @@ namespace TimeSheeter
             }
 
             // Output the total worked hours for each day and for the week
-            Console.WriteLine("\nTotal Worked Hours Since Last Monday: " + totalWorkedHours.ToString());
+            Console.WriteLine("\nTotal Worked Hours Since Last saturday: " + totalWorkedHours.ToString());
         }
+
+        private static DateTime GetLastSaturday()
+        {
+            DateTime today = DateTime.Today;
+            int daysSinceLastSaturday = ((int)today.DayOfWeek - (int)DayOfWeek.Saturday + 7) % 7;
+            DateTime lastSaturday = today.AddDays(-daysSinceLastSaturday);
+            return lastSaturday;
+        }
+
 
         public static TimeSpan totalWorkedHoursForTheWeek()
         {
