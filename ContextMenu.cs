@@ -111,6 +111,12 @@ namespace TimeSheeter
 
         private static string FormatWorkingTime(DateTime date, TimeSpan workingTime)
         {
+            // Handle time overlap at 23:59 and start the next day at 00:01
+            if (workingTime == new TimeSpan(23, 59, 0))
+            {
+                workingTime = workingTime.Add(new TimeSpan(0, 2, 0));
+            }
+
             return date.ToString("yyyy-MM-dd") + " = " + workingTime.ToString(@"hh\:mm\:ss");
         }
 

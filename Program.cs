@@ -164,6 +164,12 @@ namespace TimeSheeter
                 // Calculate the working time for the line
                 TimeSpan workingTime = endTime - startTime;
 
+                // Handle time overlap at 23:59 and start the next day at 00:01
+                if (endTime.TimeOfDay == new TimeSpan(23, 59, 0))
+                {
+                    endTime = endTime.AddMinutes(2);
+                }
+
                 // Add the working time to the total for the day
                 DateTime date = startTime.Date;
                 if (!GlobalParm.workingTimeByDay.ContainsKey(date))
@@ -212,6 +218,12 @@ namespace TimeSheeter
         {
             // Stop tracking time
             endTime = DateTime.Now;
+
+            // Handle time overlap at 23:59 and start the next day at 00:01
+            if (endTime.TimeOfDay == new TimeSpan(23, 59, 0))
+            {
+                endTime = endTime.AddMinutes(2);
+            }
                         
             using (StreamWriter writer = new StreamWriter(GlobalParm.filePath, true))
             {
