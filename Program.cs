@@ -44,6 +44,7 @@ namespace TimeSheeter
         
         // Create a dictionary to store the total working time for each day
         public static Dictionary<DateTime, TimeSpan> workingTimeByDay = new Dictionary<DateTime, TimeSpan>();
+        public static DateTime currentWeekStartDate = GetLastSaturday();
     }
 
     // ================================
@@ -146,7 +147,7 @@ namespace TimeSheeter
 
             string[] lines = File.ReadAllLines(GlobalParm.filePath, System.Text.Encoding.UTF8).Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
-            DateTime startingDate = GetLastSaturday();
+            DateTime startingDate = GlobalParm.currentWeekStartDate;
 
 
 
@@ -230,6 +231,18 @@ namespace TimeSheeter
                 writer.WriteLine(startTime.ToString() + " to " + endTime.ToString());
             }
 
+        }
+
+        public static void NavigateToPreviousWeek()
+        {
+            GlobalParm.currentWeekStartDate = GlobalParm.currentWeekStartDate.AddDays(-7);
+            ForceReloadTimesheet();
+        }
+
+        public static void NavigateToNextWeek()
+        {
+            GlobalParm.currentWeekStartDate = GlobalParm.currentWeekStartDate.AddDays(7);
+            ForceReloadTimesheet();
         }
 
  

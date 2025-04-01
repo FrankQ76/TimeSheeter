@@ -27,8 +27,8 @@ namespace TimeSheeter
 
             contextMenu.Items.Add("Reload Timesheet", null, (s, e) => { Program.ForceReloadTimesheet(); });
 
-
-            
+            contextMenu.Items.Add("Previous Week", null, (s, e) => { Program.NavigateToPreviousWeek(); });
+            contextMenu.Items.Add("Next Week", null, (s, e) => { Program.NavigateToNextWeek(); });
 
             foreach (var workingTime in GlobalParm.workingTimeByDay)
             {
@@ -117,7 +117,7 @@ namespace TimeSheeter
                 workingTime = workingTime.Add(new TimeSpan(0, 2, 0));
             }
 
-            return date.ToString("yyyy-MM-dd") + " = " + workingTime.ToString(@"hh\:mm\:ss");
+            return date.ToString("ddd dd") + " = " + workingTime.ToString(@"hh\:mm\:ss");
         }
 
 
